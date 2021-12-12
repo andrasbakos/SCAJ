@@ -1,0 +1,187 @@
+**** PROPERTIES SKAFFOLDER ****
+{
+    "forEachObj": "resource",
+    "overwrite": true,
+    "_partials": []
+}
+**** END PROPERTIES SKAFFOLDER ****
+package com.{{#lowercase project.name}}{{/lowercase}}.db.{{#lowercase db.name}}{{/lowercase}}.service.base;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bson.types.ObjectId;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+{{#equal resource.name 'User'}}
+import com.{{lowercase project.name}}.db.{{lowercase db.name}}.service.SecurityService;
+{{/equal}}
+import com.{{lowercase project.name}}.db.{{lowercase db.name}}.entity.{{capitalize resource._entity.name}};
+
+//IMPORT RELATIONS
+{{#each resource._entity._relations}}
+import com.{{#lowercase ../project.name}}{{/lowercase}}.db.{{#lowercase ../db.name}}{{/lowercase}}.entity.{{#capitalize _ent2.name}}{{/capitalize}};
+{{/each}}
+
+@Service
+public class {{#capitalize resource.name}}{{/capitalize}}BaseService {
+
+	
+	@Autowired
+	private Datastore datastore;
+	{{#equal resource.name 'User'}}
+	@Autowired
+	private SecurityService securityService;
+	{{/equal}}
+
+
+{{#notNull resource._entity}}
+    //CRUD METHODS
+    
+    {{#each resource._services}}
+    	{{#equal crudAction 'list'}}
+    	
+    //CRUD - GET LIST
+    	
+	public List<{{#capitalize ../resource._entity.name}}{{/capitalize}}> getList() {
+		return (ArrayList<{{capitalize ../resource._entity.name}}>) datastore.find({{capitalize ../resource._entity.name}}.class).asList();
+	}
+
+    	{{/equal}}
+    	{{#equal crudAction 'get'}}
+//CRUD - GET ONE
+    	
+	public {{#capitalize ../resource._entity.name}}{{/capitalize}} get(String id) {
+		return datastore.find({{capitalize ../resource._entity.name}}.class).field("_id").equal(new ObjectId(id)).get();
+	}
+
+    	{{/equal}}
+    	{{#equal crudAction 'update'}}
+//CRUD - EDIT
+    	
+	public {{#capitalize ../resource._entity.name}}{{/capitalize}} update({{#capitalize ../resource._entity.name}}{{/capitalize}} obj) {
+		datastore.save(obj);
+		return obj;
+	}
+	
+    	{{/equal}}
+    	{{#equal crudAction 'delete'}}
+//CRUD - REMOVE
+    
+	public void delete(String id) {
+		Query<{{capitalize ../resource._entity.name}}> query = datastore.createQuery({{capitalize ../resource._entity.name}}.class).field("_id").equal(new ObjectId(id));
+		datastore.delete(query);
+	}
+
+    	{{/equal}}
+    	{{#equal crudAction 'create'}}
+    //CRUD - CREATE
+    	
+	public {{#capitalize ../resource._entity.name}}{{/capitalize}} insert({{#capitalize ../resource._entity.name}}{{/capitalize}} obj) {
+		datastore.save(obj);
+		return obj;
+	}
+	
+    	{{/equal}}
+    	{{#startWith crudAction 'findBy'}}
+//CRUD - FIND BY {{#subStrCap name 6 }}{{/subStrCap}}
+    	
+	public List<{{capitalize ../resource._entity.name}}> findBy{{#subStrCap name 6 }}{{/subStrCap}}(String id{{#subStrCap name 6 }}{{/subStrCap}}) {
+		return datastore.createQuery({{capitalize ../resource._entity.name}}.class).field("{{subStr name 6 }}").equal(new ObjectId(id{{#subStrCap name 6 }}{{/subStrCap}})).asList();
+	}
+    	{{/startWith}}
+    	{{#equal crudAction 'findBy'}}
+    //CRUD - FIND BY ALL
+    	
+    	{{/equal}}
+    	{{#startWith crudAction 'get'}}
+    
+    //CRUD - GET RELATION {{subStrCap name 3 }}
+    public List<ObjectId> get{{subStrCap name 3 }}(String id) {
+    	{{capitalize ../resource._entity.name}} {{lowercase ../resource._entity.name}} = datastore.find({{capitalize ../resource._entity.name}}.class).field("_id").equal(new ObjectId(id)).get();
+    	return {{lowercase ../resource._entity.name}}.get{{subStrCap name 3 }}();
+    }
+    	{{/startWith}}
+    	{{#startWith crudAction 'addTo'}}
+    //CRUD - ADD RELATION IN {{#subStr name 5 }}{{/subStr}}
+    	
+    	{{/startWith}}
+    	{{#startWith crudAction 'removeFrom'}}
+    //CRUD - REMOVE RELATION IN {{#subStr name 10 }}{{/subStr}}
+    	
+    	{{/startWith}}
+    	{{#startWith crudAction 'linkTo'}}
+    //CRUD - LINK TO {{#subStr name 6 }}{{/subStr}}
+    	
+    	{{/startWith}}
+    	{{#startWith crudAction 'unlinkFrom'}}
+    //CRUD - UNLINK FROM {{#subStr name 10 }}{{/subStr}}
+    	
+    	{{/startWith}}
+    	{{#startWith crudAction 'strictLinkListOf'}}{{/startWith}}
+    {{/each}}{{/notNull}}
+    
+
+    
+    /*
+     * CUSTOM SERVICES
+     * 
+     *	These services will be overwritten and implemented in {{resource.name}}Service.java
+     */
+    
+    {{#each resource._services}}
+    {{#equal crudAction null}}
+    
+    /*
+    
+    YOU CAN COPY AND MODIFY THIS METHOD IN {{capitalize ../resource.name}}Service.java
+    
+    Name: {{name}}
+    Description: {{description}}
+    Params: {{#each _params}}
+    	{{type}} {{name}} - {{description}}{{/each}}
+    */
+	public Object {{name}} () {
+		
+        return null;
+        
+	}
+	
+	
+    	{{/equal}}
+    {{/each}}
+    {{#equal resource.name 'User'}}
+    public int countUsers() {
+		return (int)datastore.createQuery(User.class).count();
+	}
+	
+	public void newUser() {
+		User user = new User();
+		user.setUsername("admin");
+        user.setPassword("62f264d7ad826f02a8af714c0a54b197935b717656b80461686d450f7b3abde4c553541515de2052b9af70f710f0cd8a1a2d3f4d60aa72608d71a63a9a93c0f5");
+		ArrayList<String> roles = new ArrayList<>();
+		roles.add("ADMIN");
+		user.setRoles(roles);
+		insert(user);
+	}
+	
+	public boolean changePassword(String id, String passwordAdmin, String passwordNew) throws Exception {
+		User admin = securityService.findUserByUsername("admin");
+		User user = get(id);
+		if(admin == null)
+			return false;
+		if(user == null)
+			return false;
+		if(admin.getPassword().equals(passwordAdmin)) {
+			user.setPassword(passwordNew);
+			update(user);
+			return true;
+		}
+		return false;
+	}
+    {{/equal}}
+
+
+}

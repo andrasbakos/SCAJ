@@ -1,0 +1,17 @@
+**** PROPERTIES SKAFFOLDER ****
+{
+    "forEachObj": "oneTime",
+    "_partials": []
+}
+**** END PROPERTIES SKAFFOLDER ****
+# CONTEXT ROOT (needed for embedded tomcat)
+server.contextPath=
+
+# ACTIVE PROFILE
+spring.profiles.active=DEV
+
+server.port=${SERVER_PORT:8080}
+configfile.path=config
+
+# TOKEN SECRET
+token.secret=secret

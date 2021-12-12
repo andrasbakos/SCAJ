@@ -1,0 +1,16 @@
+**** PROPERTIES SKAFFOLDER ****
+{
+    "forEachObj": "resource",
+    "_partials": []
+}
+**** END PROPERTIES SKAFFOLDER ****
+package com.{{lowercase project.name}}.db.{{lowercase db.name}}.service;
+
+import com.{{lowercase project.name}}.db.{{lowercase db.name}}.service.base.{{capitalize resource.name}}BaseService;
+import org.springframework.stereotype.Service;
+
+@Service
+public class {{capitalize resource.name}}Service extends {{capitalize resource.name}}BaseService {
+
+	//OVERRIDE HERE YOUR CUSTOM SERVICE
+}

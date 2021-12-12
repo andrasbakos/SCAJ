@@ -1,0 +1,167 @@
+**** PROPERTIES SKAFFOLDER ****
+{
+    "forEachObj": "resource",
+    "overwrite": true,
+    "_partials": []
+}
+**** END PROPERTIES SKAFFOLDER ****
+package com.{{#lowercase project.name}}{{/lowercase}}.controller.base;
+
+import java.util.List;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.bson.types.ObjectId;
+{{#equal extra.security true}}import org.springframework.security.access.annotation.Secured;
+{{/equal}}import org.springframework.beans.factory.annotation.Autowired;
+import com.{{#lowercase project.name}}{{/lowercase}}.db.{{#lowercase db.name}}{{/lowercase}}.service.{{#capitalize resource.name}}{{/capitalize}}Service;
+import com.{{#lowercase project.name}}{{/lowercase}}.db.{{#lowercase db.name}}{{/lowercase}}.entity.{{#capitalize resource._entity.name}}{{/capitalize}};
+
+//IMPORT RELATIONS
+{{#each resource._entity._relations}}
+import com.{{#lowercase ../project.name}}{{/lowercase}}.db.{{#lowercase ../db.name}}{{/lowercase}}.entity.{{#capitalize _ent2.name}}{{/capitalize}};
+{{/each}}
+
+public class {{#capitalize resource.name}}{{/capitalize}}BaseController {
+    
+    @Autowired
+	{{#capitalize resource.name}}{{/capitalize}}Service {{camelcase resource.name}}Service;
+
+
+{{#notNull resource._entity}}
+
+//CRUD METHODS
+
+{{#each resource._services}}
+	{{#equal crudAction 'list'}}
+	
+    //CRUD - GET LIST
+    {{#equal ../extra.security true}}@Secured({ {{#isEmptyArray _roles}}"ROLE_PRIVATE_USER"{{/isEmptyArray}}{{#notNull _roles}}{{joinRoleObj2 _roles}}{{/notNull}} }){{/equal}}
+	@RequestMapping(value = "{{../resource.url}}", method = RequestMethod.{{method}}, headers = "Accept=application/json")
+	public List<{{#capitalize ../resource._entity.name}}{{/capitalize}}> getList() {
+		return {{camelcase ../resource.name}}Service.getList();
+	}
+	
+	
+	{{/equal}}
+	{{#equal crudAction 'get'}}
+	
+    //CRUD - GET ONE
+    {{#equal ../extra.security true}}@Secured({ {{#isEmptyArray _roles}}"ROLE_PRIVATE_USER"{{/isEmptyArray}}{{#notNull _roles}}{{joinRoleObj2 _roles}}{{/notNull}} }){{/equal}}
+	@RequestMapping(value = "{{../resource.url}}{{url}}", method = RequestMethod.{{method}}, headers = "Accept=application/json")
+	public {{#capitalize ../resource._entity.name}}{{/capitalize}} get(@PathVariable String id) {
+		return {{camelcase ../resource.name}}Service.get(id);
+	}
+	
+	{{/equal}}
+	{{#equal crudAction 'update'}}
+
+    //CRUD - EDIT
+    {{#equal ../extra.security true}}@Secured({ {{#isEmptyArray _roles}}"ROLE_PRIVATE_USER"{{/isEmptyArray}}{{#notNull _roles}}{{joinRoleObj2 _roles}}{{/notNull}} }){{/equal}}
+	@RequestMapping(value = "{{../resource.url}}{{url}}", method = RequestMethod.{{method}}, headers = "Accept=application/json")
+	public {{#capitalize ../resource._entity.name}}{{/capitalize}} update(@RequestBody {{#capitalize ../resource._entity.name}}{{/capitalize}} obj) {
+		return {{camelcase ../resource.name}}Service.update(obj);
+	}
+	
+	{{/equal}}
+	{{#equal crudAction 'delete'}}
+	
+    //CRUD - REMOVE
+    {{#equal ../extra.security true}}@Secured({ {{#isEmptyArray _roles}}"ROLE_PRIVATE_USER"{{/isEmptyArray}}{{#notNull _roles}}{{joinRoleObj2 _roles}}{{/notNull}} }){{/equal}}
+	@RequestMapping(value = "{{../resource.url}}{{url}}", method = RequestMethod.{{method}}, headers = "Accept=application/json")
+	public void delete(@PathVariable("id") String id) {
+		{{camelcase ../resource.name}}Service.delete(id);
+	}
+	
+	{{/equal}}
+	{{#equal crudAction 'create'}}
+
+    //CRUD - CREATE
+    {{#equal ../extra.security true}}@Secured({ {{#isEmptyArray _roles}}"ROLE_PRIVATE_USER"{{/isEmptyArray}}{{#notNull _roles}}{{joinRoleObj2 _roles}}{{/notNull}} }){{/equal}}
+	@RequestMapping(value = "{{../resource.url}}",method = RequestMethod.{{method}}, headers = "Accept=application/json")
+	public {{#capitalize ../resource._entity.name}}{{/capitalize}} insert(@RequestBody {{#capitalize ../resource._entity.name}}{{/capitalize}} obj) {
+		 return {{camelcase ../resource.name}}Service.insert(obj);
+	}
+
+	{{/equal}}
+	{{#startWith crudAction 'findBy'}}
+
+    //CRUD - FIND BY {{#subStrCap name 6 }}{{/subStrCap}}
+    {{#equal ../extra.security true}}@Secured({ {{#isEmptyArray _roles}}"ROLE_PRIVATE_USER"{{/isEmptyArray}}{{#notNull _roles}}{{joinRoleObj2 _roles}}{{/notNull}} }){{/equal}}
+	@RequestMapping(value = "{{../resource.url}}{{url}}", method = RequestMethod.GET, headers = "Accept=application/json")
+	public List<{{#capitalize ../resource._entity.name}}{{/capitalize}}> findBy{{#subStrCap name 6 }}{{/subStrCap}}(@PathVariable("key") String id{{#subStrCap name 6 }}{{/subStrCap}}) {
+		return {{camelcase ../resource.name}}Service.findBy{{#subStrCap name 6 }}{{/subStrCap}}(id{{#subStrCap name 6 }}{{/subStrCap}});
+	}
+	{{/startWith}}
+	{{#equal crudAction 'findBy'}}
+
+//CRUD - FIND BY ALL
+	
+	{{/equal}}
+	{{#startWith crudAction 'get'}}
+
+    //CRUD - GET RELATION {{#subStr name 3 }}{{/subStr}}
+    {{#equal ../extra.security true}}@Secured({ {{#isEmptyArray _roles}}"ROLE_PRIVATE_USER"{{/isEmptyArray}}{{#notNull _roles}}{{joinRoleObj2 _roles}}{{/notNull}} }){{/equal}}
+	@RequestMapping(value = "{{../resource.url}}{{url}}", method = RequestMethod.GET, headers = "Accept=application/json")
+	public List<ObjectId> get{{#subStr name 3 }}{{/subStr}}(@PathVariable String id) {
+		return {{camelcase ../resource.name}}Service.get{{#subStrCap name 3 }}{{/subStrCap}}(id);
+	}
+	{{/startWith}}
+	{{#startWith crudAction 'addTo'}}
+
+//CRUD - ADD RELATION IN {{#subStr name 5 }}{{/subStr}}
+	
+	{{/startWith}}
+	{{#startWith crudAction 'removeFrom'}}
+
+//CRUD - REMOVE RELATION IN {{#subStr name 10 }}{{/subStr}}
+	
+	{{/startWith}}
+	{{#startWith crudAction 'linkTo'}}
+
+//CRUD - LINK TO {{#subStr name 6 }}{{/subStr}}
+	
+	{{/startWith}}
+	{{#startWith crudAction 'unlinkFrom'}}
+
+//CRUD - UNLINK FROM {{#subStr name 10 }}{{/subStr}}
+	
+	{{/startWith}}
+	{{#startWith crudAction 'strictLinkListOf'}}
+
+    //CRUD - LINK LIST {{#subStr name 16 }}{{/subStr}}
+    {{#equal ../extra.security true}}@Secured({ {{#isEmptyArray _roles}}"ROLE_PRIVATE_USER"{{/isEmptyArray}}{{#notNull _roles}}{{joinRoleObj2 _roles}}{{/notNull}} }){{/equal}}
+	@RequestMapping(value = "{{../resource.url}}{{url}}", method = RequestMethod.POST, headers = "Accept=application/json")
+	public void linkList{{#subStr name 16 }}{{/subStr}}(@PathVariable("key") Long id{{#subStr name 16 }}{{/subStr}}) {}
+	
+	{{/startWith}}
+{{/each}}{{/notNull}}
+
+/*
+ * CUSTOM SERVICES
+ * 
+ *	These services will be overwritten and implemented in  {{name}}Custom.js
+ */
+
+{{#each resource._services}}
+{{#equal crudAction null}}
+
+    /*
+    Name: {{name}}
+    Description: {{description}}
+    Params: {{#each _params}}
+    	{{type}} {{name}} - {{description}}{{/each}}
+    
+    {{#equal extra.security true}}{{#notNull _roles}}@Secured({"ROLE_PRIVATE_USER"{{joinRoleObj _roles}} }){{/notNull}}{{/equal}}
+    @RequestMapping(value = "{{../resource.url}}{{url}}", method = RequestMethod.{{method}}, headers = "Accept=application/json")
+    public Object {{name}}() {
+		return new HashMap<String, String>();
+    }
+    */
+    		
+	{{/equal}}
+{{/each}}
+
+	
+}
